@@ -14,7 +14,9 @@ The project is centered around a map that you can run and explore. The main purp
 
 1. Clone the repository.
 2. If a single `AntiVirus0.1.0.exe` file is present, open it from the repository root and run it.
-3. If the executable has been split into parts (for example `AntiVirus0.1.0.exe.part01`, `AntiVirus0.1.0.exe.part02`, ...), join the parts to produce the real executable before running.
+3. If you only have a legacy payload such as `AntiVirus0.1.0.exen`, the included launcher will copy it into `AntiVirus0.1.0.exe` for you automatically.
+4. If the release was packaged as a zip archive such as `AntiVirus0.1.0.zip`, the launcher will unpack the embedded executable into `AntiVirus0.1.0.exe` before launching it.
+5. If the executable has been split into parts (for example `AntiVirus0.1.0.exe.part01`, `AntiVirus0.1.0.exe.part02`, ...), join the parts to produce the real executable before running.
 
 Joining examples:
 
@@ -37,7 +39,7 @@ After assembling the executable you can run it directly, or use the included lau
 python3 src/launcher.py
 ```
 
-The launcher will attempt to locate `AntiVirus0.1.0.exe`. If it only finds split parts it will concatenate them into `AntiVirus0.1.0.exe` and then launch the resulting file.
+The launcher will attempt to locate `AntiVirus0.1.0.exe`. If it finds a legacy `AntiVirus0.1.0.exen` payload, a `AntiVirus0.1.0.zip` archive, or split parts, it will prepare the executable and then launch it.
 
 Automated assembly script
 
@@ -47,7 +49,7 @@ If you'd prefer a helper script that assembles parts for you, there's a small ut
 python3 scripts/assemble_release.py --repo .
 ```
 
-This will create `AntiVirus0.1.0.exe` in the repository root if it can find files matching `AntiVirus0.1.0.exe.part*`.
+This will create `AntiVirus0.1.0.exe` in the repository root if it can find files matching `AntiVirus0.1.0.exe.part*`. You can also pass `--archive AntiVirus0.1.0.zip` to publish the assembled executable as a zip file for easier distribution.
 
 ## Open source notes
 

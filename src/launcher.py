@@ -7,38 +7,83 @@ import os
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 from typing import List
+
+EXE_NAME = "AntiVirus0.1.0.exe"
+LEGACY_PAYLOAD_NAME = "AntiVirus0.1.0.exen"
+PART_PATTERN = "AntiVirus0.1.0.exe.part*"
+
+
+def _assemble_parts(repo_root: Path, target: Path) -> Path:
+    parts = sorted(repo_root.glob(PART_PATTERN))
+    if not parts:
+        raise FileNotFoundError("No split executable parts were found.")
+
+    try:
+        with target.open("wb") as out_f:
+            for part in parts:
+                with part.open("rb") as in_f:
+                    shutil.copyfileobj(in_f, out_f)
+        return target
+    except Exception:
+        if target.exists():
+            try:
+                target.unlink()
+            except Exception:
+                pass
+        raise
+
+
+def _extract_zip_archive(archive_path: Path, target: Path) -> Path:
+    with zipfile.ZipFile(archive_path) as archive:
+        candidates = [
+            member for member in archive.namelist()
+            if not member.endswith("/") and member.lower().endswith(".exe")
+        ]
+        if not candidates:
+            raise FileNotFoundError(f"No executable found inside {archive_path}")
+
+        chosen = sorted(candidates, key=lambda item: item.lower())[0]
+        with archive.open(chosen) as source, target.open("wb") as destination:
+            shutil.copyfileobj(source, destination)
+        return target
 
 
 def resolve_executable(repo_root: Path) -> Path:
     """Return the packaged executable path if it exists."""
-    final_exe = repo_root / "AntiVirus0.1.0.exe"
+    final_exe = repo_root / EXE_NAME
 
-    # If the final executable already exists, return it.
     if final_exe.exists():
         return final_exe
 
-    # Look for split parts like AntiVirus0.1.0.exe.part01, .part02, ...
-    parts = sorted(repo_root.glob("AntiVirus0.1.0.exe.part*"))
-    if parts:
-        # Assemble parts into the final executable by concatenation.
+    legacy_payload = repo_root / LEGACY_PAYLOAD_NAME
+    if legacy_payload.exists():
+        with legacy_payload.open("rb") as source, final_exe.open("wb") as destination:
+            shutil.copyfileobj(source, destination)
+        return final_exe
+
+    for archive_path in sorted(repo_root.glob("*.zip")):
         try:
-            with final_exe.open("wb") as out_f:
-                for part in parts:
-                    with part.open("rb") as in_f:
-                        shutil.copyfileobj(in_f, out_f)
-            return final_exe
+            return _extract_zip_archive(archive_path, final_exe)
         except Exception:
-            # If assembly fails, remove a partially written file if present
             if final_exe.exists():
                 try:
                     final_exe.unlink()
                 except Exception:
                     pass
-            raise
+            continue
 
-    raise FileNotFoundError("Unable to find the bundled AntiVirus executable in the repository.")
+    try:
+        return _assemble_parts(repo_root, final_exe)
+    except FileNotFoundError:
+        pass
+
+    raise FileNotFoundError(
+        "Unable to find the bundled AntiVirus executable in the repository. "
+        "Looked for an .exe, a legacy .exen payload, a .zip archive, or split .part files."
+    )
 
 
 def build_launch_command(repo_root: Path, dry_run: bool = False) -> List[str]:
