@@ -13,14 +13,30 @@ from typing import List
 
 def resolve_executable(repo_root: Path) -> Path:
     """Return the packaged executable path if it exists."""
-    candidates = [
-        repo_root / "AntiVirus0.1.0.exe",
-        repo_root / "AntiVirus0.1.0.exe.part01",
-    ]
+    final_exe = repo_root / "AntiVirus0.1.0.exe"
 
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
+    # If the final executable already exists, return it.
+    if final_exe.exists():
+        return final_exe
+
+    # Look for split parts like AntiVirus0.1.0.exe.part01, .part02, ...
+    parts = sorted(repo_root.glob("AntiVirus0.1.0.exe.part*"))
+    if parts:
+        # Assemble parts into the final executable by concatenation.
+        try:
+            with final_exe.open("wb") as out_f:
+                for part in parts:
+                    with part.open("rb") as in_f:
+                        shutil.copyfileobj(in_f, out_f)
+            return final_exe
+        except Exception:
+            # If assembly fails, remove a partially written file if present
+            if final_exe.exists():
+                try:
+                    final_exe.unlink()
+                except Exception:
+                    pass
+            raise
 
     raise FileNotFoundError("Unable to find the bundled AntiVirus executable in the repository.")
 
