@@ -16,9 +16,10 @@ import shutil
 import sys
 import zipfile
 from pathlib import Path
+from typing import Optional, List
 
 
-def assemble(repo_root: Path, target_name: str = "AntiVirus0.1.0.exe", pattern: str = "AntiVirus0.1.0.exe.part*", archive_name: str | None = None) -> int:
+def assemble(repo_root: Path, target_name: str = "AntiVirus0.1.0.exe", pattern: str = "AntiVirus0.1.0.exe.part*", archive_name: Optional[str] = None) -> int:
     repo_root = Path(repo_root)
     target = repo_root / target_name
 
@@ -67,14 +68,18 @@ def assemble(repo_root: Path, target_name: str = "AntiVirus0.1.0.exe", pattern: 
     return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Assemble split executable parts into a single file")
     parser.add_argument("--repo", default=".", help="Path to repository root")
     parser.add_argument("--target", default="AntiVirus0.1.0.exe", help="Output executable name")
     parser.add_argument("--pattern", default="AntiVirus0.1.0.exe.part*", help="Glob pattern for parts")
     parser.add_argument("--archive", default=None, help="Optional .zip archive name to create from the assembled executable")
     args = parser.parse_args(argv)
-    return assemble(Path(args.repo), args.target, args.pattern, args.archive)
+    try:
+        return assemble(Path(args.repo), args.target, args.pattern, args.archive)
+    except Exception as exc:
+        print("Error during assembly:", exc, file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

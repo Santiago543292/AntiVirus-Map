@@ -82,7 +82,9 @@ def resolve_executable(repo_root: Path) -> Path:
 
     raise FileNotFoundError(
         "Unable to find the bundled AntiVirus executable in the repository. "
-        "Looked for an .exe, a legacy .exen payload, a .zip archive, or split .part files."
+        "Looked for an .exe, a legacy .exen payload, a .zip archive, or split .part files. "
+        "If you distributed the release as split parts, run `scripts/assemble_release.py` "
+        "to assemble or create a .zip archive before launching."
     )
 
 
