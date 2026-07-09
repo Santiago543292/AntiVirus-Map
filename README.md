@@ -54,6 +54,19 @@ If you prefer a PowerShell helper to run on Windows directly, there's `scripts/a
 
 After assembling the executable you can run it directly, or use the included launcher which will try to auto-assemble split parts if needed.
 
+Create a distributable ZIP
+
+If you need a ready-to-distribute ZIP (so users don't have to assemble parts), use the helper that packages the available executable or payload into `AntiVirus0.1.0.zip`:
+
+```bash
+# Create AntiVirus0.1.0.zip in the repository root
+python3 scripts/create_release_zip.py
+# On Windows
+py -3 scripts/create_release_zip.py
+```
+
+The script will prefer an existing `AntiVirus0.1.0.exe`, then a legacy `AntiVirus0.1.0.exen`, then attempt to assemble split parts. If none are found it exits with an error.
+
 ## Open source notes
 
 The repository is now organized as an open-source project with source files, tests, and contribution guidance so others can inspect or improve it.
