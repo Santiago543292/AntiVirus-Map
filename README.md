@@ -4,7 +4,9 @@ AntiVirus-Map is a simple map-based project that can be explored by walking arou
 
 ## What this project is
 
-This repository contains the packaged map executable and a small set of supporting files so the project can be opened, inspected, and run from a source-based workspace.
+This repository contains the Godot game project files under GoDotGames, along with supporting scripts and tests so the project can be opened, inspected, and run from a source-based workspace.
+
+The main game source and project assets live in the GoDotGames folder.
 
 ## How it works
 
